@@ -1,0 +1,361 @@
+{
+  "theme_id": "d17661dc-3ac0-4c3d-9530-455eb935a720",
+  "title": "Clinic Intake Demo",
+  "description": "Demo intake pasien dengan alur suara dan form terstruktur.",
+  "nodes": [
+    {
+      "id": "n_trigger",
+      "icon": "flag",
+      "type": "trigger",
+      "color": "blue",
+      "title": "Incoming Call Initiated",
+      "config": {
+        "rules": "",
+        "voice": "Jessica",
+        "purpose": "Warmly greet the caller and introduce Sarah AI Assistant.",
+        "behavior": "",
+        "llm_model": "Gemini 3 Pro Preview",
+        "step_name": "Incoming Call Initiated",
+        "target_fields": [
+          "full_name"
+        ],
+        "primary_outcome": "Politely decline and close the call",
+        "secondary_outcome": "Politely decline and close the call",
+        "voice_description": "Calm, Reassuring"
+      },
+      "position": {
+        "x": 320,
+        "y": 22
+      },
+      "description": "Warmly greet the caller and introduce Sarah AI Assistant."
+    },
+    {
+      "id": "n_qualification",
+      "icon": "pink",
+      "type": "step",
+      "color": "pink",
+      "title": "Call Qualification",
+      "badges": {
+        "rules": 2,
+        "tools": 2
+      },
+      "config": {
+        "rules": "Check caller eligibility and basic revenue criteria.",
+        "voice": "Jessica",
+        "purpose": "Identify caller intent and basic business details.",
+        "behavior": "",
+        "llm_model": "Gemini 3 Pro Preview",
+        "step_name": "Call Qualification",
+        "target_fields": [
+          "full_name",
+          "phone_number"
+        ],
+        "primary_outcome": "Politely decline and close the call",
+        "secondary_outcome": "Politely decline and close the call",
+        "voice_description": "Calm, Reassuring"
+      },
+      "position": {
+        "x": 300,
+        "y": 110
+      },
+      "description": "Identify caller intent and basic business details."
+    },
+    {
+      "id": "n_prescreening",
+      "icon": "pink",
+      "type": "step",
+      "color": "pink",
+      "title": "Merchant Pre-Screening",
+      "badges": {
+        "rules": 2,
+        "tools": 1
+      },
+      "config": {
+        "rules": "Ensure monthly volume exceeds $10k.",
+        "voice": "Jessica",
+        "purpose": "Check if the caller meets eligibility criteria.",
+        "behavior": "",
+        "llm_model": "Gemini 3 Pro Preview",
+        "step_name": "Merchant Pre-Screening",
+        "target_fields": [
+          "primary_symptoms",
+          "full_name"
+        ],
+        "primary_outcome": "Politely decline and close the call",
+        "secondary_outcome": "Politely decline and close the call",
+        "voice_description": "Calm, Reassuring"
+      },
+      "position": {
+        "x": 120,
+        "y": 300
+      },
+      "description": "Check if the caller meets eligibility criteria."
+    },
+    {
+      "id": "n_details",
+      "icon": "yellow",
+      "type": "step",
+      "color": "yellow",
+      "title": "Collect Required Details",
+      "badges": {
+        "rules": 1,
+        "tools": 1
+      },
+      "config": {
+        "rules": "Confirm business tax ID and address.",
+        "voice": "Jessica",
+        "purpose": "Gather required information to complete the profile.",
+        "step_name": "Collect Required Details",
+        "target_fields": [
+          "date_of_birth",
+          "full_name"
+        ],
+        "voice_description": "Calm, Reassuring"
+      },
+      "position": {
+        "x": 80,
+        "y": 480
+      },
+      "description": "Gather required information to complete the profile."
+    },
+    {
+      "id": "n_submit_deal",
+      "icon": "wrench",
+      "type": "step",
+      "color": "sky",
+      "title": "Submit Deal for Review",
+      "badges": {
+        "rules": 1,
+        "tools": 1
+      },
+      "config": {
+        "rules": "Trigger automated underwriting tool call.",
+        "purpose": "Submit the deal package for underwriter approval.",
+        "step_name": "Submit Deal for Review",
+        "target_fields": [
+          "full_name"
+        ]
+      },
+      "position": {
+        "x": 120,
+        "y": 660
+      },
+      "description": "Submit the deal package for underwriter approval."
+    },
+    {
+      "id": "n_ineligible",
+      "icon": "pink",
+      "type": "step",
+      "color": "pink",
+      "title": "Handle Ineligible Caller",
+      "badges": {
+        "rules": 1,
+        "tools": 2
+      },
+      "config": {
+        "rules": "De-escalate caller frustration.",
+        "voice": "Jessica",
+        "purpose": "Politely inform the caller that they are not eligible at this time, explain the reason clearly without using technical or negative language, and provide guidance on what they can do next.\n\nThe agent should de-escalate disappointment, avoid over-promising, and only escalate to a human if the caller disputes the decision or requests clarification.",
+        "llm_model": "Gemini 3 Pro Preview",
+        "step_name": "Handle Ineligible Caller",
+        "target_fields": [
+          "urgency_level",
+          "full_name"
+        ],
+        "primary_outcome": "Politely decline and close the call",
+        "secondary_outcome": "Politely decline and close the call",
+        "voice_description": "Calm, Reassuring"
+      },
+      "position": {
+        "x": 470.4347826086958,
+        "y": 280.4347826086957
+      },
+      "description": "Politely inform the caller that they are not eligible at this time, explain the reason cle..."
+    },
+    {
+      "id": "n_route_human",
+      "icon": "user",
+      "type": "step",
+      "color": "emerald",
+      "title": "Route to Human",
+      "badges": {
+        "rules": 1,
+        "tools": 1
+      },
+      "config": {
+        "purpose": "Escalate if caller disputes the ineligibility decision.",
+        "step_name": "Route to Human"
+      },
+      "position": {
+        "x": 380,
+        "y": 480
+      },
+      "description": "Escalate if needed"
+    },
+    {
+      "id": "node_1790528858090",
+      "icon": "pink",
+      "type": "step",
+      "color": "pink",
+      "title": "New Step",
+      "badges": {
+        "rules": 0,
+        "tools": 0
+      },
+      "config": {
+        "voice": "Jessica",
+        "purpose": "",
+        "step_name": "New Step",
+        "target_fields": [],
+        "voice_description": "Calm, Reassuring"
+      },
+      "position": {
+        "x": 380,
+        "y": 680
+      },
+      "description": "Describe what this step should collect or decide."
+    },
+    {
+      "id": "node_1790528891362",
+      "icon": "pink",
+      "type": "step",
+      "color": "pink",
+      "title": "New Step",
+      "badges": {
+        "rules": 0,
+        "tools": 0
+      },
+      "config": {
+        "voice": "Jessica",
+        "purpose": "",
+        "step_name": "New Step",
+        "target_fields": [],
+        "voice_description": "Calm, Reassuring"
+      },
+      "position": {
+        "x": 380,
+        "y": 880
+      },
+      "description": "Describe what this step should collect or decide."
+    },
+    {
+      "id": "n_close_call_1",
+      "icon": "phone-x",
+      "type": "action",
+      "color": "rose",
+      "title": "Close Call",
+      "config": {
+        "purpose": "End call politely.",
+        "step_name": "Close Call"
+      },
+      "position": {
+        "x": 380,
+        "y": 1080
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "to": "n_qualification",
+      "from": "n_trigger"
+    },
+    {
+      "id": "e2",
+      "to": "n_prescreening",
+      "from": "n_qualification"
+    },
+    {
+      "id": "e3",
+      "to": "n_ineligible",
+      "from": "n_qualification"
+    },
+    {
+      "id": "e4",
+      "to": "n_details",
+      "from": "n_prescreening"
+    },
+    {
+      "id": "e5",
+      "to": "n_submit_deal",
+      "from": "n_details"
+    },
+    {
+      "id": "e6",
+      "to": "n_route_human",
+      "from": "n_ineligible"
+    },
+    {
+      "id": "e7",
+      "to": "n_close_call_1",
+      "from": "n_ineligible"
+    },
+    {
+      "id": "e8",
+      "to": "n_close_call_2",
+      "from": "n_route_human"
+    },
+    {
+      "id": "edge_node_1790528858090_in",
+      "to": "node_1790528858090",
+      "from": "n_route_human"
+    },
+    {
+      "id": "edge_node_1790528891362_in",
+      "to": "node_1790528891362",
+      "from": "node_1790528858090"
+    },
+    {
+      "id": "edge_node_1790528891362_out",
+      "to": "n_close_call_1",
+      "from": "node_1790528891362"
+    }
+  ],
+  "knowledge": [],
+  "fields": [
+    {
+      "name": "full_name",
+      "label": "Full Name",
+      "type": "string",
+      "required": true,
+      "prompt_hint": "Ask for the patient's full name",
+      "options": []
+    },
+    {
+      "name": "phone_number",
+      "label": "Phone Number",
+      "type": "phone",
+      "required": true,
+      "prompt_hint": "Ask for the best contact phone number",
+      "options": []
+    },
+    {
+      "name": "primary_symptoms",
+      "label": "Primary Symptoms",
+      "type": "text",
+      "required": true,
+      "prompt_hint": "Ask what symptoms or pain the patient is experiencing",
+      "options": []
+    },
+    {
+      "name": "date_of_birth",
+      "label": "Date of Birth",
+      "type": "date",
+      "required": true,
+      "prompt_hint": "Ask for date of birth (day, month, year)",
+      "options": []
+    },
+    {
+      "name": "urgency_level",
+      "label": "Urgency Level",
+      "type": "enum",
+      "required": true,
+      "prompt_hint": "Estimate urgency level based on patient symptoms",
+      "options": [
+        "low",
+        "medium",
+        "high"
+      ]
+    }
+  ]
+}

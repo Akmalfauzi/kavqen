@@ -1,0 +1,134 @@
+{
+  "theme_id": "complaint",
+  "title": "Customer Support Complaint Agent",
+  "description": "Voice-assisted customer support ticket and complaint intake workflow.",
+  "greeting": "Hello, welcome to Customer Support. Could you please state your name?",
+  "redirect_instruction": "If the customer strays from the topic, acknowledge their concern empathetically, then guide them back to the active question.",
+  "nodes": [
+    {
+      "id": "node_trigger",
+      "type": "trigger",
+      "title": "Incoming Call Initiated",
+      "icon": "flag",
+      "color": "blue",
+      "description": "Caller connects to support, agent offers a warm, professional greeting.",
+      "config": {
+        "step_name": "Incoming Call Initiated",
+        "purpose": "Greet the customer warmly and ask for their name.",
+        "behavior": "Professional, courteous, and attentive tone.",
+        "rules": "Ask for the customer's name.",
+        "target_fields": ["customer_name"]
+      },
+      "position": { "x": 380, "y": 40 }
+    },
+    {
+      "id": "node_qualification",
+      "type": "step",
+      "title": "Call Qualification",
+      "icon": "clipboard",
+      "color": "pink",
+      "description": "Identify caller intent and order / transaction reference.",
+      "config": {
+        "step_name": "Call Qualification",
+        "purpose": "Identify customer issue intent and obtain order ID or transaction reference number.",
+        "behavior": "Request order details clearly and give user time to locate their receipt or email.",
+        "rules": "Capture transaction or order code in uppercase alphanumeric format.",
+        "target_fields": ["order_id"]
+      },
+      "position": { "x": 360, "y": 180 }
+    },
+    {
+      "id": "node_complaint_detail",
+      "type": "step",
+      "title": "Issue Diagnosis & Categorization",
+      "icon": "user",
+      "color": "yellow",
+      "description": "Gather detailed description of the problem and assign category.",
+      "config": {
+        "step_name": "Issue Diagnosis & Categorization",
+        "purpose": "Listen to the specific issue (billing, shipping delay, damaged item) without interrupting.",
+        "behavior": "Show sincere empathy and de-escalate frustration. Never argue with the customer.",
+        "rules": "Categorize issue as: billing, shipping, product_quality, or other.",
+        "target_fields": ["issue_detail", "issue_category"]
+      },
+      "position": { "x": 160, "y": 360 }
+    },
+    {
+      "id": "node_contact_email",
+      "type": "step",
+      "title": "Follow-Up Contact",
+      "icon": "phone",
+      "color": "emerald",
+      "description": "Obtain email address for ticket updates and case tracking.",
+      "config": {
+        "step_name": "Follow-Up Contact",
+        "purpose": "Obtain customer active email address to send the support ticket and resolution status.",
+        "behavior": "Assure the user that ticket updates will be sent promptly.",
+        "rules": "Validate standard email format.",
+        "target_fields": ["contact_email"]
+      },
+      "position": { "x": 560, "y": 360 }
+    },
+    {
+      "id": "node_completion",
+      "type": "step",
+      "title": "Ticket Confirmation & Close",
+      "icon": "check",
+      "color": "indigo",
+      "description": "Provide ticket reference, resolution timeline, and submit.",
+      "config": {
+        "step_name": "Ticket Confirmation & Close",
+        "purpose": "Thank the customer, provide reassurance that an agent will investigate within 24 hours, and submit the case.",
+        "behavior": "Close on an optimistic, supportive note.",
+        "rules": "Call `submit_form`.",
+        "target_fields": []
+      },
+      "position": { "x": 360, "y": 540 }
+    }
+  ],
+  "edges": [
+    { "id": "e1", "from": "node_trigger", "to": "node_qualification" },
+    { "id": "e2", "from": "node_qualification", "to": "node_complaint_detail" },
+    { "id": "e3", "from": "node_qualification", "to": "node_contact_email" },
+    { "id": "e4", "from": "node_complaint_detail", "to": "node_completion" },
+    { "id": "e5", "from": "node_contact_email", "to": "node_completion" }
+  ],
+  "fields": [
+    {
+      "name": "customer_name",
+      "label": "Customer Name",
+      "type": "string",
+      "required": true,
+      "prompt_hint": "Ask for the customer's name"
+    },
+    {
+      "name": "order_id",
+      "label": "Order / Transaction ID",
+      "type": "string",
+      "required": true,
+      "prompt_hint": "Ask for order ID or transaction reference"
+    },
+    {
+      "name": "issue_detail",
+      "label": "Issue Description",
+      "type": "text",
+      "required": true,
+      "prompt_hint": "Ask for details about the problem"
+    },
+    {
+      "name": "issue_category",
+      "label": "Issue Category",
+      "type": "enum",
+      "options": ["billing", "shipping", "product_quality", "other"],
+      "required": true,
+      "prompt_hint": "Determine issue category from customer explanation"
+    },
+    {
+      "name": "contact_email",
+      "label": "Contact Email",
+      "type": "string",
+      "required": true,
+      "prompt_hint": "Ask for email address for ticket updates"
+    }
+  ]
+}

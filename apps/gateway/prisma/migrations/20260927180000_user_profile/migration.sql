@@ -1,0 +1,3 @@
+ALTER TABLE "User" ADD COLUMN "phone" TEXT,
+ADD COLUMN "company" TEXT,
+ADD COLUMN "language" TEXT NOT NULL DEFAULT 'en';

@@ -1,0 +1,306 @@
+{
+  "title": "Sarah AI Agent",
+  "nodes": [
+    {
+      "id": "n_trigger",
+      "type": "trigger",
+      "title": "Incoming Call Initiated",
+      "icon": "flag",
+      "color": "blue",
+      "config": {
+        "step_name": "Incoming Call Initiated",
+        "purpose": "Warmly greet the caller and introduce Sarah AI Assistant.",
+        "target_fields": [
+          "full_name"
+        ]
+      },
+      "position": {
+        "x": 320,
+        "y": 30
+      }
+    },
+    {
+      "id": "n_qualification",
+      "type": "step",
+      "title": "Call Qualification",
+      "icon": "pink",
+      "color": "pink",
+      "description": "Identify caller intent and basic business details.",
+      "badges": {
+        "rules": 2,
+        "tools": 2
+      },
+      "config": {
+        "step_name": "Call Qualification",
+        "purpose": "Identify caller intent and basic business details.",
+        "rules": "Check caller eligibility and basic revenue criteria.",
+        "target_fields": [
+          "full_name",
+          "phone_number"
+        ],
+        "behavior": "",
+        "primary_outcome": "Politely decline and close the call",
+        "secondary_outcome": "Politely decline and close the call",
+        "voice": "Jessica",
+        "voice_description": "Calm, Reassuring",
+        "llm_model": "Gemini 3 Pro Preview"
+      },
+      "position": {
+        "x": 300,
+        "y": 110
+      }
+    },
+    {
+      "id": "n_prescreening",
+      "type": "step",
+      "title": "Merchant Pre-Screening",
+      "icon": "pink",
+      "color": "pink",
+      "description": "Check if the caller meets eligibility criteria.",
+      "badges": {
+        "rules": 2,
+        "tools": 1
+      },
+      "config": {
+        "step_name": "Merchant Pre-Screening",
+        "purpose": "Check if the caller meets eligibility criteria.",
+        "rules": "Ensure monthly volume exceeds $10k.",
+        "target_fields": [
+          "primary_symptoms",
+          "full_name"
+        ],
+        "behavior": "",
+        "primary_outcome": "Politely decline and close the call",
+        "secondary_outcome": "Politely decline and close the call",
+        "voice": "Jessica",
+        "voice_description": "Calm, Reassuring",
+        "llm_model": "Gemini 3 Pro Preview"
+      },
+      "position": {
+        "x": 120,
+        "y": 300
+      }
+    },
+    {
+      "id": "n_details",
+      "type": "step",
+      "title": "Collect Required Details",
+      "icon": "yellow",
+      "color": "yellow",
+      "description": "Gather required information to complete the profile.",
+      "badges": {
+        "rules": 1,
+        "tools": 1
+      },
+      "config": {
+        "step_name": "Collect Required Details",
+        "purpose": "Gather required information to complete the profile.",
+        "rules": "Confirm business tax ID and address.",
+        "target_fields": [
+          "date_of_birth",
+          "full_name"
+        ]
+      },
+      "position": {
+        "x": 80,
+        "y": 480
+      }
+    },
+    {
+      "id": "n_submit_deal",
+      "type": "step",
+      "title": "Submit Deal for Review",
+      "icon": "wrench",
+      "color": "sky",
+      "description": "Submit the deal package for underwriter approval.",
+      "badges": {
+        "rules": 1,
+        "tools": 1
+      },
+      "config": {
+        "step_name": "Submit Deal for Review",
+        "purpose": "Submit the deal package for underwriter approval.",
+        "rules": "Trigger automated underwriting tool call.",
+        "target_fields": [
+          "full_name"
+        ]
+      },
+      "position": {
+        "x": 120,
+        "y": 660
+      }
+    },
+    {
+      "id": "n_ineligible",
+      "type": "step",
+      "title": "Handle Ineligible Caller",
+      "icon": "pink",
+      "color": "pink",
+      "description": "Explain ineligibility and provide guidance.",
+      "badges": {
+        "rules": 1,
+        "tools": 2
+      },
+      "config": {
+        "step_name": "Handle Ineligible Caller",
+        "purpose": "Politely inform the caller that they are not eligible at this time, explain the reason clearly without using technical or negative language, and provide guidance on what they can do next.\n\nThe agent should de-escalate disappointment, avoid over-promising, and only escalate to a human if the caller disputes the decision or requests clarification.",
+        "primary_outcome": "Politely decline and close the call",
+        "secondary_outcome": "Politely decline and close the call",
+        "voice": "Jessica",
+        "voice_description": "Calm, Reassuring",
+        "llm_model": "Gemini 3 Pro Preview",
+        "rules": "De-escalate caller frustration.",
+        "target_fields": [
+          "urgency_level",
+          "full_name"
+        ]
+      },
+      "position": {
+        "x": 470.4347826086958,
+        "y": 280.4347826086957
+      }
+    },
+    {
+      "id": "n_route_human",
+      "type": "step",
+      "title": "Route to Human",
+      "icon": "user",
+      "color": "emerald",
+      "description": "Escalate if needed",
+      "badges": {
+        "rules": 1,
+        "tools": 1
+      },
+      "config": {
+        "step_name": "Route to Human",
+        "purpose": "Escalate if caller disputes the ineligibility decision."
+      },
+      "position": {
+        "x": 380,
+        "y": 480
+      }
+    },
+    {
+      "id": "n_close_call_1",
+      "type": "action",
+      "title": "Close Call",
+      "icon": "phone-x",
+      "color": "rose",
+      "config": {
+        "step_name": "Close Call",
+        "purpose": "End call politely."
+      },
+      "position": {
+        "x": 688.6274509803937,
+        "y": 499.01960784313746
+      }
+    },
+    {
+      "id": "n_close_call_2",
+      "type": "action",
+      "title": "Close Call",
+      "icon": "phone-x",
+      "color": "rose",
+      "config": {
+        "step_name": "Close Call",
+        "purpose": "End call politely after escalation transfer."
+      },
+      "position": {
+        "x": 433.92156862745105,
+        "y": 651.7647058823533
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "n_trigger",
+      "to": "n_qualification"
+    },
+    {
+      "id": "e2",
+      "from": "n_qualification",
+      "to": "n_prescreening"
+    },
+    {
+      "id": "e3",
+      "from": "n_qualification",
+      "to": "n_ineligible"
+    },
+    {
+      "id": "e4",
+      "from": "n_prescreening",
+      "to": "n_details"
+    },
+    {
+      "id": "e5",
+      "from": "n_details",
+      "to": "n_submit_deal"
+    },
+    {
+      "id": "e6",
+      "from": "n_ineligible",
+      "to": "n_route_human"
+    },
+    {
+      "id": "e7",
+      "from": "n_ineligible",
+      "to": "n_close_call_1"
+    },
+    {
+      "id": "e8",
+      "from": "n_route_human",
+      "to": "n_close_call_2"
+    }
+  ],
+  "fields": [
+    {
+      "name": "full_name",
+      "label": "Full Name",
+      "type": "string",
+      "required": true,
+      "prompt_hint": "Ask for the patient's full name"
+    },
+    {
+      "name": "date_of_birth",
+      "label": "Date of Birth",
+      "type": "date",
+      "required": true,
+      "prompt_hint": "Ask for date of birth (day, month, year)"
+    },
+    {
+      "name": "primary_symptoms",
+      "label": "Primary Symptoms",
+      "type": "text",
+      "required": true,
+      "prompt_hint": "Ask what symptoms or pain the patient is experiencing"
+    },
+    {
+      "name": "urgency_level",
+      "label": "Urgency Level",
+      "type": "enum",
+      "options": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "required": true,
+      "prompt_hint": "Estimate urgency level based on patient symptoms"
+    },
+    {
+      "name": "allergies",
+      "label": "Known Allergies",
+      "type": "text",
+      "required": false,
+      "prompt_hint": "Ask if the patient has any known drug or food allergies"
+    },
+    {
+      "name": "phone_number",
+      "label": "Phone Number",
+      "type": "phone",
+      "required": true,
+      "prompt_hint": "Ask for the best contact phone number"
+    }
+  ],
+  "theme_id": "clinic"
+}

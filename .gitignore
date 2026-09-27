@@ -1,0 +1,52 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build outputs
+.next/
+dist/
+build/
+*.egg-info/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+!.env.docker.example
+!**/.env.example
+
+# IDE & System
+.DS_Store
+.vscode/
+.idea/
+*.log
+.dev-mail/
+
+# Agent tooling & generated
+graphify-out/
+.claude/
+
+# Docs (keep README only)
+*.md
+!README.md
+
+# Throwaway codemod scripts
+patch_*.js
+fix_*.js
+check_*.js
+*.bak
+query_db.js
+*.tsbuildinfo
+
+# Local backups
+.backup/

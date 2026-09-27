@@ -1,0 +1,15 @@
+{
+  "name": "kavqen-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"pnpm dev:client\" \"pnpm dev:gateway\" \"pnpm dev:ai\"",
+    "dev:client": "pnpm --filter client dev",
+    "dev:gateway": "pnpm --filter gateway dev",
+    "dev:ai": "cd apps/ai-service && .venv/bin/uvicorn main:app --reload --port 8001",
+    "build": "pnpm --recursive build"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

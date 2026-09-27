@@ -1,0 +1,93 @@
+{
+  "theme_id": "demo-workflow-intake",
+  "title": "Demo - Consultation Registration",
+  "description": "A demo scenario using fictional data.",
+  "nodes": [
+    {
+      "id": "demo-step-0",
+      "type": "trigger",
+      "title": "Full name",
+      "position": {
+        "x": 320,
+        "y": 40
+      },
+      "config": {
+        "step_name": "Full name",
+        "purpose": "Ask for the full name and confirm spelling.",
+        "target_fields": [
+          "demo_full_name"
+        ]
+      }
+    },
+    {
+      "id": "demo-step-1",
+      "type": "step",
+      "title": "Phone number",
+      "position": {
+        "x": 320,
+        "y": 260
+      },
+      "config": {
+        "step_name": "Phone number",
+        "purpose": "Ask for the complete phone number and confirm every digit.",
+        "target_fields": [
+          "demo_phone"
+        ]
+      }
+    },
+    {
+      "id": "demo-step-2",
+      "type": "step",
+      "title": "Notes",
+      "position": {
+        "x": 320,
+        "y": 480
+      },
+      "config": {
+        "step_name": "Notes",
+        "purpose": "Ask for any additional requirements or feedback.",
+        "target_fields": [
+          "demo_notes"
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "demo-edge-0",
+      "source": "demo-step-0",
+      "target": "demo-step-1"
+    },
+    {
+      "id": "demo-edge-1",
+      "source": "demo-step-1",
+      "target": "demo-step-2"
+    }
+  ],
+  "fields": [
+    {
+      "name": "demo_full_name",
+      "label": "Full name",
+      "type": "string",
+      "required": true,
+      "options": [],
+      "prompt_hint": "Ask for the full name and confirm spelling."
+    },
+    {
+      "name": "demo_phone",
+      "label": "Phone number",
+      "type": "phone",
+      "required": true,
+      "options": [],
+      "prompt_hint": "Ask for the complete phone number and confirm every digit."
+    },
+    {
+      "name": "demo_notes",
+      "label": "Notes",
+      "type": "text",
+      "required": false,
+      "options": [],
+      "prompt_hint": "Ask for any additional requirements or feedback."
+    }
+  ]
+}
