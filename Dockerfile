@@ -73,5 +73,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN python -c "from fastembed import TextEmbedding; TextEmbedding(model_name='BAAI/bge-small-en-v1.5', cache_dir='/opt/fastembed')"
 COPY apps/ai-service ./
 COPY configs /app/configs
+COPY configs /app/default-configs
 EXPOSE 8001
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8001"]
