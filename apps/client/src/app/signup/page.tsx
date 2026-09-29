@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { RiRobot2Line } from 'react-icons/ri';
+import { RiArrowLeftLine, RiRobot2Line } from 'react-icons/ri';
 import toast, { Toaster } from 'react-hot-toast';
 import { api, hashPassword, saveToken } from '@/lib/api';
 import PasswordInput from '@/components/PasswordInput';
@@ -55,6 +55,13 @@ export default function SignupPage() {
     <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 selection:bg-indigo-500 selection:text-white">
       <Toaster position="top-center" />
 
+      <div className="mb-6 px-4 sm:mx-auto sm:w-full sm:max-w-md sm:px-0">
+        <Link href="/" className="inline-flex min-h-11 items-center gap-2 rounded-lg px-2 text-sm font-semibold text-slate-500 transition hover:bg-slate-100 hover:text-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
+          <RiArrowLeftLine aria-hidden="true" className="h-4 w-4" />
+          Back to home
+        </Link>
+      </div>
+
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 via-sky-600 to-teal-500 flex items-center justify-center text-white shadow-lg">
@@ -65,7 +72,7 @@ export default function SignupPage() {
           Create an account
         </h2>
         <p className="mt-2 text-center text-sm text-slate-500 font-medium">
-          Start building your voice AI agents today
+          Join as a participant and try voice-guided forms
         </p>
       </div>
 

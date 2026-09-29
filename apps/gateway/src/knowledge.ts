@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import { indexKnowledge, deleteKnowledge, searchKnowledge } from './knowledge-index.js';
 import { prisma } from './db.js';
 import { authMiddleware } from './middlewares.js';
 import { canOwnWorkflows, getActor } from './access.js';
@@ -28,13 +29,25 @@ knowledgeRouter.get('/', async (req: Request, res: Response) => {
   }
 });
 
+knowledgeRouter.post('/search', async (req, res) => {
+  const actor = await getActor(req);
+  if (!canOwnWorkflows(actor)) return res.status(403).json({ success: false, message: 'Owner access required' });
+  if (typeof req.body?.query !== 'string' || !req.body.query.trim() || req.body.query.length > 4000) return res.status(400).json({ success: false, message: 'Enter a search query (1-4000 characters)' });
+  try { return res.json({ success: true, data: await searchKnowledge(actor!.id, req.body.query) }); }
+  catch { return res.status(503).json({ success: false, message: 'Knowledge search is temporarily unavailable' }); }
+});
+
 knowledgeRouter.post('/', async (req: Request, res: Response) => {
   try {
     const actor = await getActor(req);
     if (!canOwnWorkflows(actor)) return res.status(403).json({ success: false, message: 'Owner access required' });
     const input = validate(req.body);
     if (!input) return res.status(400).json({ success: false, message: 'Title, category, and content are required within size limits' });
-    const data = await prisma.knowledgeDocument.create({ data: { ...input, ownerId: actor!.id } });
+    const data = await prisma.$transaction(async tx => {
+      const document = await tx.knowledgeDocument.create({ data: { ...input, ownerId: actor!.id } });
+      await indexKnowledge(document);
+      return document;
+    }, { timeout: 90000 });
     return res.status(201).json({ success: true, data });
   } catch (error: any) {
     return res.status(500).json({ success: false, message: error.message });
@@ -47,11 +60,15 @@ knowledgeRouter.put('/:id', async (req: Request, res: Response) => {
     if (!canOwnWorkflows(actor)) return res.status(403).json({ success: false, message: 'Owner access required' });
     const input = validate(req.body);
     if (!input) return res.status(400).json({ success: false, message: 'Title, category, and content are required within size limits' });
-    const result = await prisma.knowledgeDocument.updateMany({
-      where: { id: req.params.id as string, ownerId: actor!.id, deletedAt: null }, data: input
-    });
-    if (!result.count) return res.status(404).json({ success: false, message: 'Document not found' });
-    const data = await prisma.knowledgeDocument.findUnique({ where: { id: req.params.id as string } });
+    const data = await prisma.$transaction(async tx => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${String(req.params.id)}))`;
+      const document = await tx.knowledgeDocument.findFirst({ where: { id: String(req.params.id), ownerId: actor!.id, deletedAt: null } });
+      if (!document) return null;
+      const updated = await tx.knowledgeDocument.update({ where: { id: document.id }, data: input });
+      await indexKnowledge(updated);
+      return updated;
+    }, { timeout: 90000 });
+    if (!data) return res.status(404).json({ success: false, message: 'Document not found' });
     return res.json({ success: true, data });
   } catch (error: any) {
     return res.status(500).json({ success: false, message: error.message });
@@ -62,10 +79,15 @@ knowledgeRouter.delete('/:id', async (req: Request, res: Response) => {
   try {
     const actor = await getActor(req);
     if (!canOwnWorkflows(actor)) return res.status(403).json({ success: false, message: 'Owner access required' });
-    const result = await prisma.knowledgeDocument.updateMany({
-      where: { id: req.params.id as string, ownerId: actor!.id, deletedAt: null }, data: { deletedAt: new Date() }
-    });
-    if (!result.count) return res.status(404).json({ success: false, message: 'Document not found' });
+    const removed = await prisma.$transaction(async tx => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${String(req.params.id)}))`;
+      const document = await tx.knowledgeDocument.findFirst({ where: { id: String(req.params.id), ownerId: actor!.id, deletedAt: null } });
+      if (!document) return false;
+      await deleteKnowledge(document);
+      await tx.knowledgeDocument.update({ where: { id: document.id }, data: { deletedAt: new Date() } });
+      return true;
+    }, { timeout: 90000 });
+    if (!removed) return res.status(404).json({ success: false, message: 'Document not found' });
     return res.json({ success: true, data: null });
   } catch (error: any) {
     return res.status(500).json({ success: false, message: error.message });

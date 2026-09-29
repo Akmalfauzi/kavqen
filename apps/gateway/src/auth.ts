@@ -1,3 +1,4 @@
+import { inviteDemoParticipant } from './demo.js';
 import express from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
@@ -46,7 +47,12 @@ authRouter.post('/register', async (req, res) => {
     if (existing) return res.status(409).json({ success: false, message: 'Email already registered. Sign in or reset your password.' });
     const role = await prisma.role.findFirst({ where: { code: 'USER', deletedAt: null } });
     if (!role) return res.status(503).json({ success: false, message: 'Registration is temporarily unavailable.' });
-    const user = await prisma.user.create({ data: { email, name, password: await bcrypt.hash(password, 10), roleId: role.id } });
+    const passwordHash = await bcrypt.hash(password, 10);
+    const user = await prisma.$transaction(async tx => {
+      const created = await tx.user.create({ data: { email, name, password: passwordHash, roleId: role.id } });
+      await inviteDemoParticipant(tx, created);
+      return created;
+    });
     return res.status(201).json({ success: true, message: 'Account created', data: session(user, false) });
   } catch (error: any) {
     if (error.code === 'P2002') return res.status(409).json({ success: false, message: 'Email already registered.' });
@@ -126,8 +132,13 @@ authRouter.post('/google', async (req, res) => {
 
     const role = await prisma.role.findFirst({ where: { code: 'USER', deletedAt: null } });
     if (!role) return res.status(503).json({ success: false, message: 'Registration is temporarily unavailable.' });
-    const created = await prisma.user.create({
-      data: { email, googleId: identity.sub, name: identity.name?.trim().slice(0, 100) || email.split('@')[0], roleId: role.id },
+    const googleIdentity = identity;
+    const created = await prisma.$transaction(async tx => {
+      const user = await tx.user.create({
+        data: { email, googleId: googleIdentity.sub, name: googleIdentity.name?.trim().slice(0, 100) || email.split('@')[0], roleId: role.id },
+      });
+      await inviteDemoParticipant(tx, user);
+      return user;
     });
     return res.status(201).json({ success: true, message: 'Google account created', data: session(created, req.body.rememberMe === true) });
   } catch (error: any) {

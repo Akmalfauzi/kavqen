@@ -6,6 +6,7 @@ import { SEARCH_DEBOUNCE_MS } from '@/hooks/useDebouncedValue';
 import { useRouter } from 'next/navigation';
 import { api, clearToken } from '@/lib/api';
 import { ActivePage } from './AppSidebar';
+import Modal from './Modal';
 import toast from 'react-hot-toast';
 import {
   RiArrowLeftLine,
@@ -57,6 +58,7 @@ export default function TopNavbar({
 
   // Profile state
   const [profileOpen, setProfileOpen] = useState(false);
+  const [confirmSignOut, setConfirmSignOut] = useState(false);
 
   const notifRef = useRef<HTMLDivElement | null>(null);
   const profileRef = useRef<HTMLDivElement | null>(null);
@@ -121,6 +123,7 @@ export default function TopNavbar({
   }, [searchOpen, searchQuery, user?.email, roleCode]);
 
   return (
+    <>
     <header className="h-16 w-full bg-white border-b border-slate-200/90 px-5 md:px-6 flex items-center justify-between shadow-xs sticky top-0 z-30 select-none">
       {/* 1. Left Context Banner */}
       <div className="flex items-center space-x-3 min-w-0">
@@ -334,9 +337,7 @@ export default function TopNavbar({
                 <button
                   onClick={() => {
                     setProfileOpen(false);
-                    clearToken();
-                    sessionStorage.removeItem('pending_share_code');
-                    window.location.replace('/login');
+                    setConfirmSignOut(true);
                   }}
                   className="w-full text-left px-3 py-2 rounded-xl hover:bg-rose-50 text-rose-600 font-semibold text-xs flex items-center space-x-2.5"
                 >
@@ -419,5 +420,18 @@ export default function TopNavbar({
         </div>
       )}
     </header>
+    {confirmSignOut && <Modal title="Sign out?" subtitle="Account session" onClose={() => setConfirmSignOut(false)} footer={
+      <div className="flex justify-end gap-3">
+        <button type="button" onClick={() => setConfirmSignOut(false)} className="h-10 rounded-lg border border-slate-200 px-4 text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
+        <button type="button" onClick={() => {
+          clearToken();
+          sessionStorage.removeItem('pending_share_code');
+          window.location.replace('/login');
+        }} className="inline-flex h-10 items-center gap-2 rounded-lg bg-rose-600 px-4 text-sm font-semibold text-white hover:bg-rose-700"><RiLogoutBoxRLine aria-hidden="true" />Sign out</button>
+      </div>
+    }>
+      <p className="text-sm leading-relaxed text-slate-600">You will leave this account and return to the sign in page.</p>
+    </Modal>}
+    </>
   );
 }

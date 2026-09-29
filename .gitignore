@@ -4,6 +4,7 @@ node_modules
 
 # Build outputs
 .next/
+.next-build/
 dist/
 build/
 *.egg-info/

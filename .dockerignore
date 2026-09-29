@@ -12,6 +12,10 @@ node_modules
 .pnpm-store
 .next
 **/.next
+.next-build
+**/.next-build
+.backup
+**/.dev-mail
 dist
 **/dist
 .venv

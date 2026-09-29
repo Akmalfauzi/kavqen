@@ -3,6 +3,7 @@
 import Modal from '@/components/Modal';
 import Pagination from '@/components/Pagination';
 import PageHeader from '@/components/PageHeader';
+import DashboardStatCard from '@/components/DashboardStatCard';
 
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
@@ -115,11 +116,7 @@ export default function UserFormsDashboard() {
     <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
       <PageHeader icon={<RiDashboardLine />} eyebrow="Your workspace" title="Dashboard" description="Your next conversation starts here. Manage invitations and open the forms shared with you." />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map(({ label, count, hint, icon: Icon, tone }) => <div key={label} className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5">
-          <div className="flex items-center justify-between gap-2"><p className="text-xs font-semibold text-slate-500">{label}</p><span className={`rounded-lg p-2 ${tone}`}><Icon aria-hidden="true" className="h-4 w-4" /></span></div>
-          <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900">{dashboardError ? '-' : count ?? '...'}</p>
-          <p className="mt-2 text-xs text-slate-400">{hint}</p>
-        </div>)}
+        {stats.map(({ label, count, hint, icon, tone }) => <DashboardStatCard key={label} label={label} count={dashboardError ? '-' : count} hint={hint} icon={icon} tone={tone} />)}
       </div>
       {dashboardError && <div role="alert" className="rounded-xl bg-rose-50 p-4 text-sm text-rose-700">{dashboardError} <button onClick={() => { void loadDashboard(); }} className="font-semibold underline">Try again</button></div>}
       <div className="grid items-start gap-6 lg:grid-cols-3">

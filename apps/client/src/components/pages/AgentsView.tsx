@@ -7,7 +7,7 @@ import PageHeader from '@/components/PageHeader';
 import { api } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { ActivePage } from '../AppSidebar';
-import { RiAddLine, RiMicLine, RiRobot2Line, RiPencilLine, RiFileListLine } from 'react-icons/ri';
+import { RiMicLine, RiRobot2Line, RiPencilLine, RiFileListLine } from 'react-icons/ri';
 
 interface AgentsViewProps {
   onNavigate: (page: ActivePage) => void;
@@ -54,13 +54,6 @@ export default function AgentsView({ onNavigate, onSelectAgent }: AgentsViewProp
     }
   };
 
-  const openCreate = () => {
-    setEditingId(null);
-    setNewAgentName('');
-    setNewAgentRole('');
-    setShowCreateModal(true);
-  };
-
   const openEdit = (agent: any) => {
     setEditingId(agent.id);
     setNewAgentName(agent.name || '');
@@ -79,19 +72,6 @@ export default function AgentsView({ onNavigate, onSelectAgent }: AgentsViewProp
           role: newAgentRole.trim() || 'Custom Conversational Agent'
         });
         toast.success('Agent updated successfully');
-      } else {
-        await api.post('/agents', {
-          name: newAgentName.trim(),
-          role: newAgentRole.trim() || 'Custom Conversational Agent',
-          isActive: true,
-          voice: 'Jessica (Calm, Reassuring)',
-          model: 'AssemblyAI Universal-3.5 Streaming',
-          workflowSteps: 4,
-          themeId: 'clinic',
-          avatarGradient: 'from-purple-500 to-indigo-400',
-          tags: ['Custom']
-        });
-        toast.success('Agent created successfully');
       }
       fetchAgents();
       setShowCreateModal(false);
@@ -109,10 +89,7 @@ export default function AgentsView({ onNavigate, onSelectAgent }: AgentsViewProp
     <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6 select-none animate-in fade-in duration-200">
       <PageHeader icon={<RiRobot2Line />} eyebrow="Your workspace" title="AI Agent Catalog"
         description="Configure conversational personalities, assigned workflow diagrams, and voice models."
-        actions={<button type="button" onClick={openCreate}
-          className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 text-sm font-semibold text-white transition hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
-          <RiAddLine aria-hidden="true" className="h-4 w-4" />Create New Agent
-        </button>} />
+        />
 
       {/* Agents Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">

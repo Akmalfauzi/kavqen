@@ -1,3 +1,7 @@
+from dotenv import load_dotenv
+load_dotenv()
+
+from app.knowledge import router as knowledge_router
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.router import router
@@ -17,6 +21,7 @@ app.add_middleware(
 )
 
 app.include_router(router)
+app.include_router(knowledge_router)
 
 @app.get("/health")
 def health_check():

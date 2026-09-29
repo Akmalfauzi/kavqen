@@ -30,6 +30,18 @@ export default function KnowledgeView() {
   useEffect(() => { setCurrentPage(1); }, [debouncedSearch]);
   const itemsPerPage = 10;
   const [knowledgeItems, setKnowledgeItems] = useState<KnowledgeItem[]>([]);
+  const [semanticIds, setSemanticIds] = useState<string[]>([]);
+  const [searching, setSearching] = useState(false);
+  useEffect(() => {
+    if (!debouncedSearch.trim()) { setSemanticIds([]); setSearching(false); return; }
+    const abort = new AbortController();
+    setSearching(true);
+    api.post('/knowledge/search', { query: debouncedSearch }, { signal: abort.signal })
+      .then(response => setSemanticIds([...new Set<string>(response.data.data.map((item: { id: string }) => item.id))]))
+      .catch(error => { if (!abort.signal.aborted) { setSemanticIds([]); toast.error(error.response?.data?.message || 'Knowledge search failed'); } })
+      .finally(() => { if (!abort.signal.aborted) setSearching(false); });
+    return () => abort.abort();
+  }, [debouncedSearch, knowledgeItems]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -60,7 +72,7 @@ export default function KnowledgeView() {
       setEditingId(null);
       setNewTitle('');
       setNewSnippet('');
-      toast.success('Document saved. Republish workflow to use updated knowledge in voice calls.');
+      toast.success('Document indexed. New voice sessions will use the updated knowledge.');
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to save document');
     } finally {
@@ -81,18 +93,13 @@ export default function KnowledgeView() {
     try {
       await api.delete(`/knowledge/${item.id}`);
       setKnowledgeItems((current) => current.filter((entry) => entry.id !== item.id));
-      toast.success('Document deleted. Republish workflow to update voice knowledge.');
+      toast.success('Document removed from voice knowledge.');
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to delete document');
     }
   };
 
-  const filtered = knowledgeItems.filter(
-    (k) =>
-      k.title.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-      k.content.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-      k.category.toLowerCase().includes(debouncedSearch.toLowerCase())
-  );
+  const filtered = debouncedSearch.trim() ? semanticIds.map(id => knowledgeItems.find(item => item.id === id)).filter((item): item is KnowledgeItem => !!item) : knowledgeItems;
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / itemsPerPage));
   
@@ -117,7 +124,7 @@ export default function KnowledgeView() {
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6 select-none animate-in fade-in duration-200">
       <PageHeader icon={<RiBookOpenLine />} eyebrow="Your workspace" title="Agent Knowledge Base"
-        description="Saved guidelines for your voice workflows. Republish workflow after changes."
+        description="Search saved guidelines by meaning. Updated knowledge is available in new voice sessions."
         actions={<button type="button"
           onClick={() => { setEditingId(null); setNewTitle(''); setNewSnippet(''); setNewCategory('Guidelines'); setShowAddModal(true); }}
           className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 text-sm font-semibold text-white transition hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
@@ -143,7 +150,7 @@ export default function KnowledgeView() {
 
       {/* Document Cards */}
       <div className="space-y-3">
-        {loading && <p className="text-sm text-slate-500">Loading knowledge...</p>}
+        {(loading || searching) && <p className="text-sm text-slate-500">Loading knowledge...</p>}
         {!loading && filtered.length === 0 && <p className="text-sm text-slate-500">No knowledge documents found.</p>}
         {paginatedItems.map((item) => (
           <div

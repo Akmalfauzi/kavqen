@@ -1,19 +1,40 @@
 services:
+  qdrant:
+    image: qdrant/qdrant:v1.15.4
+    restart: unless-stopped
+    volumes:
+      - qdrant-data:/qdrant/storage
+    expose:
+      - "6333"
+    ports:
+      - "127.0.0.1:6333:6333"
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/6333'"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
   ai-service:
     build:
       context: .
       target: ai-service
     restart: unless-stopped
+    environment:
+      QDRANT_URL: http://qdrant:6333
+      KNOWLEDGE_INTERNAL_TOKEN: ${KNOWLEDGE_INTERNAL_TOKEN:?Set KNOWLEDGE_INTERNAL_TOKEN in .env}
+    depends_on:
+      qdrant:
+        condition: service_healthy
     volumes:
       - ./configs:/app/configs
     expose:
-      - "8000"
+      - "8001"
     healthcheck:
       test:
         - CMD
         - python
         - -c
-        - "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"
+        - "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"
       interval: 10s
       timeout: 5s
       retries: 5
@@ -27,10 +48,18 @@ services:
     env_file:
       - ./apps/gateway/.env
     environment:
-      PORT: "3001"
-      AI_SERVICE_URL: http://ai-service:8000
+      PORT: "3003"
+      KNOWLEDGE_INTERNAL_TOKEN: ${KNOWLEDGE_INTERNAL_TOKEN:?Set KNOWLEDGE_INTERNAL_TOKEN in .env}
+      AI_SERVICE_URL: http://ai-service:8001
+      CLIENT_URL: ${CLIENT_URL:-http://localhost:3002}
+      GATEWAY_URL: ${GATEWAY_URL:-http://localhost:3003}
+      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI:-http://localhost:3003/api/v1/integrations/google/callback}
+    volumes:
+      - ./configs:/app/configs
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
-      - "3001:3001"
+      - "3003:3003"
     depends_on:
       ai-service:
         condition: service_healthy
@@ -39,7 +68,7 @@ services:
         - CMD
         - node
         - -e
-        - "fetch('http://localhost:3001/health').then(r => { if (!r.ok) process.exit(1) }).catch(() => process.exit(1))"
+        - "fetch('http://localhost:3003/health').then(r => { if (!r.ok) process.exit(1) }).catch(() => process.exit(1))"
       interval: 10s
       timeout: 5s
       retries: 5
@@ -50,10 +79,12 @@ services:
       context: .
       target: client
       args:
-        NEXT_PUBLIC_GATEWAY_URL: ${NEXT_PUBLIC_GATEWAY_URL:-http://localhost:3001}
+        NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${NEXT_PUBLIC_GOOGLE_CLIENT_ID:-}
+        NEXT_PUBLIC_SOCKET_URL: ${NEXT_PUBLIC_SOCKET_URL:-http://localhost:3003}
+        NEXT_PUBLIC_ENCRYPTION_KEY: ${NEXT_PUBLIC_ENCRYPTION_KEY:-default-hackathon-key}
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "3002:3002"
     depends_on:
       gateway:
         condition: service_healthy
@@ -62,8 +93,11 @@ services:
         - CMD
         - node
         - -e
-        - "fetch('http://localhost:3000').then(r => { if (!r.ok) process.exit(1) }).catch(() => process.exit(1))"
+        - "fetch('http://localhost:3002').then(r => { if (!r.ok) process.exit(1) }).catch(() => process.exit(1))"
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 20s
+
+volumes:
+  qdrant-data:

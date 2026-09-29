@@ -7,7 +7,8 @@
     "dev:client": "pnpm --filter client dev",
     "dev:gateway": "pnpm --filter gateway dev",
     "dev:ai": "cd apps/ai-service && .venv/bin/uvicorn main:app --reload --port 8001",
-    "build": "pnpm --recursive build"
+    "build": "pnpm --recursive build",
+    "demo:reset": "bash scripts/reset-demo.sh"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

@@ -8,7 +8,7 @@ import { api, hashPassword, saveToken } from '@/lib/api';
 
 type GoogleIdentity = {
   initialize: (options: { client_id: string; callback: (response: { credential: string }) => void; auto_select: boolean; ux_mode: 'popup' }) => void;
-  renderButton: (element: HTMLElement, options: { type: 'standard'; theme: 'outline'; size: 'large'; text: 'signin_with' | 'signup_with'; shape: 'pill'; width: number }) => void;
+  renderButton: (element: HTMLElement, options: { type: 'standard'; theme: 'outline'; size: 'large'; text: 'signin_with' | 'signup_with'; shape: 'pill'; width: number; locale: 'en' }) => void;
 };
 
 function googleIdentity() {
@@ -57,10 +57,10 @@ export default function GoogleAuthButton({ mode, rememberMe = false, disabled = 
       if (!active.current) return;
       saveToken(response.data.data.token, remember);
       sessionStorage.setItem('pending_auth_notice', response.status === 201
-        ? 'Akun berhasil dibuat dengan Google. Selamat datang!'
+        ? 'Account created with Google. Welcome!'
         : accountPassword
-          ? 'Akun Google berhasil ditautkan. Kamu sudah masuk.'
-          : 'Berhasil masuk dengan Google.');
+          ? 'Google account linked. You are signed in.'
+          : 'Signed in with Google.');
       setPassword('');
       setLinkAccount(null);
       const pendingCode = sessionStorage.getItem('pending_share_code');
@@ -91,7 +91,7 @@ export default function GoogleAuthButton({ mode, rememberMe = false, disabled = 
     try {
       identity.initialize({ client_id: clientId, auto_select: false, ux_mode: 'popup', callback: response => authenticateRef.current(response.credential) });
       element.replaceChildren();
-      identity.renderButton(element, { type: 'standard', theme: 'outline', size: 'large', text: mode === 'signup' ? 'signup_with' : 'signin_with', shape: 'pill', width: Math.min(400, Math.max(200, element.clientWidth)) });
+      identity.renderButton(element, { type: 'standard', theme: 'outline', size: 'large', text: mode === 'signup' ? 'signup_with' : 'signin_with', shape: 'pill', width: Math.min(400, Math.max(200, element.clientWidth)), locale: 'en' });
     } catch { setScriptError(true); }
     return () => { element.replaceChildren(); };
   }, [clientId, scriptReady, mode]);
@@ -108,7 +108,7 @@ export default function GoogleAuthButton({ mode, rememberMe = false, disabled = 
   };
 
   return <div className="space-y-3">
-    {clientId && <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" onReady={() => { setScriptReady(true); setScriptError(false); }} onError={() => setScriptError(true)} />}
+    {clientId && <Script src="https://accounts.google.com/gsi/client?hl=en" strategy="afterInteractive" onReady={() => { setScriptReady(true); setScriptError(false); }} onError={() => setScriptError(true)} />}
     {!clientId && <p className="rounded-xl border border-slate-200 p-3 text-center text-sm text-slate-500">Google sign-in is not available yet. Use email and password.</p>}
     {clientId && !scriptReady && !scriptError && <p role="status" className="text-center text-sm text-slate-500">Loading Google sign-in...</p>}
     {scriptError && <p role="alert" className="text-sm text-red-700">Google sign-in could not load. Check your connection and reload this page, or use email and password.</p>}

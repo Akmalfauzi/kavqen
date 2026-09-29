@@ -1,3 +1,5 @@
+import { demoCatalogLocked } from './demo.js';
+import { searchKnowledge } from './knowledge-index.js';
 import { notifyUser } from './notification-realtime.js';
 import { Router, Request, Response } from 'express';
 import { prisma } from './db.js';
@@ -73,27 +75,7 @@ workflowRouter.get('/:id', authMiddleware, async (req: Request, res: Response) =
   }
 });
 
-workflowRouter.post('/', authMiddleware, async (req: Request, res: Response) => {
-  try {
-    const actor = await getActor(req);
-    if (!canOwnWorkflows(actor)) return res.status(403).json({ success: false, message: 'Owner access required' });
-    const { name, description, status, data } = req.body;
-    if (!name) return res.status(400).json({ success: false, message: 'Name is required' });
-
-    const workflow = await prisma.workflow.create({
-      data: {
-        name,
-        description: description || null,
-        status: 'DRAFT',
-        data: data || {},
-        ownerId: actor!.id
-      }
-    });
-    return res.status(201).json({ success: true, message: 'Workflow created', data: workflow });
-  } catch (error: any) {
-    return res.status(500).json({ success: false, message: error.message });
-  }
-});
+workflowRouter.post('/', authMiddleware, demoCatalogLocked);
 
 workflowRouter.put('/:id', authMiddleware, async (req: Request, res: Response) => {
   try {
@@ -150,12 +132,7 @@ workflowRouter.post('/:id/publish', authMiddleware, async (req: Request, res: Re
       });
     }
     const orderedFields = references.names!.map((name) => fieldsByName.get(name)!);
-    const knowledge = await prisma.knowledgeDocument.findMany({
-      where: { ownerId: actor!.id, deletedAt: null },
-      select: { title: true, content: true },
-      orderBy: { updatedAt: 'desc' },
-      take: 20
-    });
+    const knowledge = await searchKnowledge(actor!.id, `${workflow.name} ${workflow.description || ''} ${orderedFields.map(field => field.label).join(' ')}`);
     const schema = {
       theme_id: workflow.id,
       title: workflow.name,
@@ -197,20 +174,4 @@ workflowRouter.post('/:id/publish', authMiddleware, async (req: Request, res: Re
   }
 });
 
-workflowRouter.delete('/:id', authMiddleware, async (req: Request, res: Response) => {
-  try {
-    const actor = await getActor(req);
-    const workflow = await prisma.workflow.findFirst({
-      where: { id: req.params.id as string, deletedAt: null }
-    });
-    if (!workflow || !ownsWorkflow(actor, workflow)) return res.status(404).json({ success: false, message: 'Workflow not found' });
-
-    await prisma.workflow.update({
-      where: { id: req.params.id as string },
-      data: { deletedAt: new Date() }
-    });
-    return res.status(200).json({ success: true, message: 'Workflow deleted', data: null });
-  } catch (error: any) {
-    return res.status(500).json({ success: false, message: error.message });
-  }
-});
+workflowRouter.delete('/:id', authMiddleware, demoCatalogLocked);

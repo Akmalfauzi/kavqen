@@ -8,6 +8,10 @@ import { randomUUID } from 'node:crypto';
 import express from 'express';
 import CryptoJS from 'crypto-js';
 import jwt from 'jsonwebtoken';
+import { agentRouter } from './agent.js';
+import { workflowRouter } from './workflow.js';
+import { knowledgeRouter } from './knowledge.js';
+import { userRouter } from './user.js';
 import { authRouter } from './auth.js';
 import { authMiddleware } from './middlewares.js';
 import { prisma } from './db.js';
@@ -21,6 +25,10 @@ test('email/password authentication and single-use password recovery', async () 
   const app = express();
   app.use(express.json());
   app.use('/auth', authRouter);
+  app.use('/agents', agentRouter);
+  app.use('/workflows', workflowRouter);
+  app.use('/knowledge', knowledgeRouter);
+  app.use('/user', userRouter);
   app.get('/protected', authMiddleware, (_req, res) => res.json({ success: true }));
   const server = app.listen(0, '127.0.0.1');
   await new Promise<void>(resolve => server.on('listening', resolve));
@@ -43,11 +51,24 @@ test('email/password authentication and single-use password recovery', async () 
     assert.equal((await post('register', { email, name: 'Test' })).status, 400);
     assert.equal((await post('register', { email, name: 'Test', password: encrypt('short') })).status, 400);
     assert.equal((await post('register', { email, name: 'Test', password: encrypt('x'.repeat(73)) })).status, 400);
-    const signup = await post('register', { email: ` ${email.toUpperCase()} `, name: ' Test User ', password: encrypt('OriginalPassword123') });
+    const signup = await post('register', { email: ` ${email.toUpperCase()} `, name: ' Test User ', password: encrypt('OriginalPassword123'), role: 'SUPER-ADMIN', roleId: 'injected-role', isAdmin: true });
     assert.equal(signup.status, 201);
     assert.equal(signup.body.data.user.email, email);
     assert.equal(signup.body.data.user.name, 'Test User');
     const originalToken = signup.body.data.token;
+    const stored = await prisma.user.findUniqueOrThrow({ where: { email }, include: { role: true } });
+    assert.equal(stored.role?.code, 'USER');
+    for (const endpoint of ['/agents', '/workflows']) {
+      for (const method of ['POST', 'DELETE']) {
+        const response = await fetch(`${base}${endpoint}${method === 'DELETE' ? '/clinic' : ''}`, { method, headers: { Authorization: `Bearer ${originalToken}`, 'Content-Type': 'application/json' }, body: '{}' });
+        assert.equal(response.status, 403);
+      }
+    }
+    const search = await fetch(`${base}/knowledge/search`, { method: 'POST', headers: { Authorization: `Bearer ${originalToken}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ query: 'policies', ownerId: 'someone-else' }) });
+    assert.equal(search.status, 403);
+    const profile = await fetch(`${base}/user/me`, { method: 'PATCH', headers: { Authorization: `Bearer ${originalToken}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'Test User', phone: '', company: '', language: 'en', roleId: 'injected-role', role: { code: 'SUPER-ADMIN' } }) });
+    assert.equal(profile.status, 200);
+    assert.equal((await prisma.user.findUniqueOrThrow({ where: { email }, include: { role: true } })).role?.code, 'USER');
     assert.equal((await post('register', { email, name: 'Test', password: encrypt('OriginalPassword123') })).status, 409);
     assert.equal((await post('login', { email, googleId: 'unverified-google-id' })).status, 401);
     assert.equal((await post('login', { email, password: encrypt('wrong-password') })).status, 401);
@@ -85,6 +106,8 @@ test('email/password authentication and single-use password recovery', async () 
     assert.equal((await fetch(`${base}/protected`, { headers: { Authorization: `Bearer ${changed.body.data.token}` } })).status, 401);
   } finally {
     await new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
+    await prisma.accessCode.deleteMany({ where: { inviteEmail: email } });
+    await prisma.userNotification.deleteMany({ where: { user: { email } } });
     await prisma.user.deleteMany({ where: { email } });
     await prisma.$disconnect();
     await rm(directory, { recursive: true, force: true });

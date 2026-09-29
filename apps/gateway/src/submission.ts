@@ -67,7 +67,7 @@ submissionRouter.post('/', authMiddleware, async (req: Request, res: Response) =
 
     const outcome = await prisma.$transaction(async (tx) => {
       // Serialize submissions for this account/form without deleting legacy receipts.
-      await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${actor.id + ':' + workflowId}, 0))`;
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${actor.id + ':' + workflowId}, 0))`;
       const existing = await tx.submission.findFirst({ where: { userId: actor.id, workflowId }, orderBy: { createdAt: 'asc' } });
       if (existing) return { submission: existing, created: false };
 
