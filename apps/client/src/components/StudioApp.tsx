@@ -114,6 +114,7 @@ export default function StudioApp({ initialPage, agentId }: { initialPage?: stri
   const routeAgentId = (segments[0] === 'agents' ? segments[1] : undefined) || agentId;
 
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const canManageWorkflows = ['SUPER-ADMIN', 'ADMIN'].includes(currentUser?.role?.code);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -152,8 +153,8 @@ export default function StudioApp({ initialPage, agentId }: { initialPage?: stri
         console.error('Failed to fetch fields:', error);
       }
     };
-    fetchFields();
-  }, []);
+    if (canManageWorkflows) fetchFields();
+  }, [canManageWorkflows]);
 
 
   const handleNavigate = useCallback((page: ActivePage) => {
@@ -599,8 +600,10 @@ export default function StudioApp({ initialPage, agentId }: { initialPage?: stri
   }, []);
 
   useEffect(() => {
-    loadThemeSchema(selectedTheme, selectedLanguage);
-  }, [selectedTheme, selectedLanguage, loadThemeSchema]);
+    if (canManageWorkflows && activePage === 'test-agent') {
+      loadThemeSchema(selectedTheme, selectedLanguage);
+    }
+  }, [canManageWorkflows, activePage, selectedTheme, selectedLanguage, loadThemeSchema]);
 
   // Keyboard shortcut Ctrl+J / Cmd+J for AI Workflow Generation
   useEffect(() => {
